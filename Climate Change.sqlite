@@ -1,0 +1,77 @@
+-- Understanding the Data:
+-- 1
+SELECT * 
+FROM state_climate;
+
+-- Aggregate and Value Functions:
+-- 2
+SELECT state, year, tempf, tempc,
+AVG(tempf) 
+ OVER(
+  PARTITION BY state
+  ORDER BY year
+  ) AS 'running_avg_temp'
+FROM state_climate;
+
+--3
+SELECT state, year, tempf, tempc,
+FIRST_VALUE(tempc) OVER(
+   PARTITION BY state
+   ORDER BY tempc
+ ) AS 'lowest_temp'
+FROM state_climate;
+
+-- 4
+SELECT state, year, tempf, tempc,
+LAST_VALUE(tempc) OVER(
+    PARTITION BY state
+    ORDER BY tempc
+    RANGE BETWEEN UNBOUNDED 
+    PRECEDING AND UNBOUNDED FOLLOWING
+  ) AS 'highest_temp'
+FROM state_climate;
+
+-- 5
+SELECT state, year, tempf, tempc,
+tempf - LAG(tempf, 1, 0) OVER(
+    PARTITION BY state
+    ORDER BY year
+  ) AS 'change_in_temp'
+FROM state_climate
+ORDER BY change_in_temp;
+
+-- Ranking Functions:
+-- 6
+SELECT
+  RANK() OVER (
+    PARTITION BY state
+    ORDER BY tempc
+  ) AS 'coldest_rank',
+  year, state, tempf, tempc
+FROM state_climate;
+
+-- 7
+SELECT
+   RANK() OVER (
+    PARTITION BY state
+    ORDER BY tempc DESC
+  ) AS 'warmest_rank',
+    year, state, tempf, tempc
+FROM state_climate;
+
+-- 8
+SELECT
+  NTILE(4) OVER (
+   PARTITION BY state
+   ORDER BY tempc
+  ) AS 'quartile',
+   year, state, tempf, tempc
+FROM state_climate;
+
+-- 9
+SELECT
+  NTILE(5) OVER (
+    ORDER BY tempc
+  ) AS 'quartile',
+  year, state, tempf, tempc
+FROM state_climate;
